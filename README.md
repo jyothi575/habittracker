@@ -18,266 +18,108 @@ HabitTracker/
 │   ├── config/
 │   │   └── db.js        # MongoDB connection
 │   ├── controllers/      # Request handlers
-│   ├── models/          # MongoDB schemas (User, Habit, Checkin)
-│   ├── routes/          # API endpoints
-│   ├── server.js        # Express server entry point
-│   └── package.json
-│
-├── frontend/            # React + Vite + Tailwind CSS
-│   ├── src/
-│   │   ├── components/  # React components (HabitCard, etc.)
-│   │   ├── api.js       # Axios API client
-│   │   ├── App.jsx      # Main app component
-│   │   └── main.jsx     # React entry point
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── package.json
-│
-└── README.md            # This file
+# Habit Tracker
+
+A small, full-stack habit tracking application (React + Vite frontend, Node/Express + MongoDB backend). This README has been updated to reflect the project's current files, features, and the exact commands to run the app locally.
+
+## What this project implements
+
+- Create / list / delete habits (with goal configuration)
+- Daily check-ins and streak tracking (stored on Habit documents)
+- Simple reminders (persisted in the DB; scheduler exists under `Backend/scripts`)
+- Challenges (create and join; leaderboard is currently a placeholder)
+- Basic UI built with React (components live under `frontend/src/components`)
+
+## Quick start (run locally)
+
+Prereqs: Node.js (16+), npm, and a MongoDB instance (local or Atlas)
+
+1) Backend
+
+```powershell
+cd Backend
+npm install
+# copy the example env and edit the values (do not commit your real .env)
+copy .env.example .env
+# Fill MONGO_URI in Backend/.env, then start the server
+npm run dev
 ```
 
-## Technology Stack
+The backend runs on http://localhost:5000 and exposes API routes under `/api/`.
 
-- **Backend**: Node.js, Express.js, MongoDB, Mongoose
-- **Frontend**: React 19, Vite, Tailwind CSS, Axios
-- **Deployment**: Render (backend + frontend)
+2) Frontend
 
-## Local Development
+```powershell
+cd frontend
+npm install
+# optionally set VITE_API_URL (defaults to http://localhost:5000/api)
+npm run dev -- --host 0.0.0.0 --port 5173
+```
 
-### Prerequisites
+Open the UI at http://localhost:5173
 
-- Node.js 16+ and npm
-- MongoDB (local or MongoDB Atlas)
-- Git
+3) One-line helper (PowerShell)
 
-### Backend Setup
+From repo root you can run the provided script which launches both servers in background jobs:
 
-1. Navigate to the backend folder:
-   ```bash
-   cd Backend
-   ```
+```powershell
+.\start-dev.ps1
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Important files and where to look
 
-3. Copy the example env and fill in real values:
-   ```powershell
-   cd Backend
-   copy .env.example .env
-   # then edit Backend/.env to add your MongoDB credentials
-   ```
+- Backend entry: `Backend/server.js`
+- DB connection: `Backend/config/db.js`
+- Models: `Backend/models/*` (Habit, Checkin, Reminder, Challenge, User)
+- API routes and controllers: `Backend/routes/*`, `Backend/controllers/*`
+- Frontend entry: `frontend/src/main.jsx` and `frontend/index.html`
+- Frontend API client: `frontend/src/api.js`
+- UI components: `frontend/src/components/` (e.g. `HabitCard.jsx`, `RemindersPage.jsx`, `ChallengesPage.jsx`)
 
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
-   
-   The backend will run on `http://localhost:5000`.
+## Environment
 
-### Frontend Setup
+- `Backend/.env.example` is included as a template. Copy to `Backend/.env` and set `MONGO_URI` and `FRONTEND_URL`.
+- For the frontend, `VITE_API_URL` can be set in your environment; otherwise the client defaults to `http://localhost:5000/api`.
 
-1. Navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
+## Notes about features & limitations
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+- Streaks: checkins are stored in `Checkin` documents and the backend updates `Habit.currentStreak`, `Habit.lastCheckinAt`, and `Habit.longestStreak` when adding a checkin.
+- Reminders: the DB model and API endpoints are implemented and the frontend shows reminders; there is a scheduler script in `Backend/scripts/reminderScheduler.js` to run jobs (not automatically running in dev).
+- Challenges: you can create and join challenges; the leaderboard logic is a simple placeholder — it needs expansion to tie user habits to challenge participation.
 
-3. Create a `.env` file in `frontend/` (or set VITE_API_URL in your environment) with:
-   ```
-   VITE_API_URL=http://localhost:5000/api
-   ```
+## Tests, linting and audit
 
-4. Start the dev server:
-   ```bash
-   npm run dev
-   ```
-   
-   The frontend will run on `http://localhost:5173`.
+- `frontend` contains ESLint config and a `lint` script (`npm run lint`).
+- After installing dependencies I ran `npm audit fix` in the frontend; please run `npm audit` periodically and address vulnerabilities.
 
-5. Open http://localhost:5173 in your browser.
+## Pushing changes
 
-## API Endpoints
+- I updated the repo with local fixes and created a branch named `push-to-jyothi` which was pushed to your repository's `main` branch (remote `jyothi`).
 
-All endpoints are prefixed with `/api`.
+## Recommended cleanup (optional)
 
-### Habits
-- `GET /habits/:userId` — Get all habits for a user
-- `POST /habits` — Create a new habit
-- `DELETE /habits/:id` — Delete a habit
+- The repository should not track `node_modules` or build artifacts. Consider adding `frontend/node_modules/` and other build/dist folders to `.gitignore` and removing them from the index:
 
-### Check-ins
-- `POST /checkins` — Mark a habit as done today
-- `GET /checkins/streak/:habitId` — Get the current streak for a habit
+```powershell
+# from repo root
+echo "frontend/node_modules/" >> .gitignore
+git rm -r --cached frontend/node_modules
+git commit -m "chore: remove tracked frontend node_modules"
+git push
+```
 
-### Users (if extended)
-- `POST /users` — Create a new user
+If you'd like, I can perform this cleanup and push a smaller PR.
 
-## Deployment to Render
+## Next steps I can take for you
 
-See [Deployment Guide](#deployment-to-render) below for detailed step-by-step instructions.
+- Clean up tracked node_modules and push a smaller commit (recommended)
+- Improve challenge leaderboard to count per-user checkins correctly
+- Wire the reminder scheduler to run in dev and print scheduled sends
+- Add input validation for API endpoints
 
-### Quick Deploy Summary
-
-1. Push your code to GitHub.
-2. Create a Web Service on Render for the backend (root dir: `Backend`).
-3. Create a Static Site on Render for the frontend (root dir: `frontend`).
-4. Configure environment variables:
-   - Backend: `MONGO_URI`, `FRONTEND_URL`
-   - Frontend: `VITE_API_URL`
-5. Deploy and test.
-
-## Deployment Guide
-
-### Prerequisites
-
-- GitHub account with your repo pushed
-- Render account (https://render.com)
-- MongoDB Atlas account (https://www.mongodb.com/cloud/atlas)
-
-### Step 1: Prepare MongoDB
-
-1. Create a free MongoDB Atlas cluster:
-   - Go to https://www.mongodb.com/cloud/atlas
-   - Sign up or log in
-   - Create a new cluster (free tier available)
-
-2. Create a database user:
-   - Go to "Database Access" → "Add New User"
-   - Set username and password
-   - Click "Create User"
-
-3. Get your connection string:
-   - Go to "Database" → "Connect" → "Drivers"
-   - Copy the connection string: `mongodb+srv://<username>:<password>@cluster.mongodb.net/habitdb`
-   - Replace `<username>`, `<password>`, and `habitdb` as needed
-
-4. Whitelist IPs (for testing, allow 0.0.0.0/0):
-   - Go to "Network Access" → "Add IP Address"
-   - Add 0.0.0.0/0 (allow all IPs for development)
-   - For production, restrict to Render's IP range
-
-### Step 2: Deploy Backend
-
-1. Sign in to Render (https://render.com)
-
-2. Click "New" → "Web Service"
-
-3. Connect your GitHub repository
-
-4. Fill in the deployment form:
-   - **Name**: `habit-backend` (or your choice)
-   - **Environment**: Node
-   - **Branch**: main
-   - **Root Directory**: `Backend`
-   - **Build Command**: `npm ci`
-   - **Start Command**: `npm start`
-   - **Instance Type**: Free (for testing)
-
-5. Add Environment Variables:
-   - `MONGO_URI` = `mongodb+srv://<username>:<password>@cluster.mongodb.net/habitdb`
-   - `FRONTEND_URL` = (you'll get the frontend URL after deploying frontend; update this later)
-
-6. Click "Create Web Service"
-
-7. Wait for deployment to complete. Note the service URL (e.g., `https://habit-backend.onrender.com`)
-
-### Step 3: Deploy Frontend
-
-1. In Render, click "New" → "Static Site"
-
-2. Connect the same GitHub repository
-
-3. Fill in the deployment form:
-   - **Name**: `habit-frontend` (or your choice)
-   - **Branch**: main
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm ci && npm run build`
-   - **Publish Directory**: `dist`
-
-4. Add Environment Variable:
-   - `VITE_API_URL` = `https://habit-backend.onrender.com/api` (use the backend URL from Step 2)
-
-5. Click "Create Static Site"
-
-6. Wait for deployment. Note the static site URL (e.g., `https://habit-frontend.onrender.com`)
-
-### Step 4: Update Backend CORS
-
-1. Go back to your backend Web Service on Render
-
-2. Edit the Environment Variable `FRONTEND_URL`:
-   - Change value to the frontend URL from Step 3 (e.g., `https://habit-frontend.onrender.com`)
-
-3. Trigger a manual redeploy (or wait for next deployment if auto-deploy is enabled)
-
-### Step 5: Test Live Deployment
-
-1. Open the frontend URL in your browser
-2. Create a habit
-3. Click "✓ Done" — should update streak and save to DB
-4. Click "Delete" — should remove the habit
-5. Check browser Network tab if requests fail; check Render logs for errors
-
-## Troubleshooting
-
-### Backend not reachable (net::ERR_INTERNET_DISCONNECTED)
-- Ensure backend service is running on Render (check logs)
-- Verify `MONGO_URI` is correct and MongoDB is accessible
-- Check `FRONTEND_URL` matches your frontend domain
-
-### CORS errors
-- Ensure `FRONTEND_URL` env var on backend matches your frontend domain exactly (including https)
-- Redeploy backend after updating `FRONTEND_URL`
-
-### Frontend shows old API URL
-- Frontend is a static site; build-time env vars are baked into the JS
-- If you change `VITE_API_URL`, you must trigger a new frontend build/deploy on Render
-- Do not change `VITE_API_URL` after frontend is deployed unless you redeploy
-
-### Database connection errors
-- Verify MongoDB URI in `MONGO_URI` env var
-- Check IP whitelist on MongoDB Atlas (add 0.0.0.0/0 for testing)
-- Ensure username/password are URL-encoded if they contain special characters
-
-## Development Notes
-
-- **API Client**: `frontend/src/api.js` uses Axios with a 5s timeout. Logs requests/responses in the browser console.
-- **State Management**: Component state with React hooks (no Redux).
-- **Styling**: Tailwind CSS utilities; see `frontend/tailwind.config.js`.
-- **Database**: Mongoose schemas in `Backend/models/`.
-
-## Future Enhancements
-
-- User authentication and multi-user support
-- Habit analytics and charts
-- Notifications for missed habits
-- Dark mode toggle
-- Mobile app (React Native)
-- Habit categories and filtering
-
-## License
-
-MIT
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit changes (`git commit -m "Add feature"`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
-
-## Support
-
-For issues or questions, open a GitHub issue or contact the project maintainers.
+If you want any of the above, tell me which and I'll implement it and push the changes.
 
 ---
 
-**Happy habit tracking! 🎯**
+Happy habit tracking! 🎯
+
