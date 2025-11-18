@@ -28,5 +28,9 @@ export const createHabit = (payload) => API.post('/habits', payload)
 export const deleteHabit = (id) => API.delete(`/habits/${id}`)
 export const addCheckin = (payload) => API.post('/checkins', payload)
 export const getStreak = (habitId) => API.get(`/checkins/streak/${habitId}`)
+// Rewards
+export const fetchRewards = () => API.get('/rewards')
+export const claimReward = (userId, rewardId) => API.post('/rewards/claim', { userId, rewardId })
+export const getUserRewards = (userId) => API.get(`/rewards/${userId}`)
 
 export default API
