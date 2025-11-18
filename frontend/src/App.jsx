@@ -17,6 +17,7 @@ export default function App() {
   const [goalValue, setGoalValue] = useState(1)
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState('habits') // 'habits' or 'rewards'
+  const [chartHabitId, setChartHabitId] = useState(null)
 
   // temporary fixed userId
   const userId = "000000000000000000000000"
@@ -26,6 +27,7 @@ export default function App() {
       setLoading(true)
       const res = await fetchHabits(userId)
       setHabits(res.data)
+      if (res.data && res.data.length > 0) setChartHabitId(res.data[0]._id)
     } catch (err) {
       console.error(err)
     } finally {
@@ -144,7 +146,15 @@ export default function App() {
       {/* Show charts section under habits for quick preview of first habit */}
       {page === 'habits' && habits.length > 0 && (
         <div className="mt-6">
-          <Charts habitId={habits[0]._id} range={30} />
+          <div className="flex items-center gap-2 mb-3">
+            <label className="text-sm text-slate-600">Chart:</label>
+            <select value={chartHabitId || ''} onChange={(e) => setChartHabitId(e.target.value)} className="border p-2 rounded">
+              {habits.map(h => (
+                <option key={h._id} value={h._id}>{h.name}</option>
+              ))}
+            </select>
+          </div>
+          <Charts habitId={chartHabitId} range={30} />
         </div>
       )}
 
